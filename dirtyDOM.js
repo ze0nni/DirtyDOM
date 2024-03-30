@@ -1,7 +1,4 @@
-
-((doc, body) => {
-
-DD = {window, dispatchEvent }
+window.DD = (() => {
 
 let windowsCounter = 0;
 const windows = {}
@@ -31,12 +28,7 @@ function window(title, f)  {
 
         document.body.appendChild(dialogEl)
 
-        return {
-                show,
-                hide,
-                update,
-                close
-        }
+        return { show, hide, update, close }
 
         function show() {
                 dialogEl.show()
@@ -52,6 +44,7 @@ function window(title, f)  {
 
         function close() {
                 dialogEl.remove()
+                delete windows[windowId]
         }
 
         function rebuild() {
@@ -107,4 +100,6 @@ function window(title, f)  {
         }
 }
 
-})(window.document, window.document.body);
+return {window, dispatchEvent }
+
+})();
