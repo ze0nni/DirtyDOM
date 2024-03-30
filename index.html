@@ -10,8 +10,14 @@
                 let count = 0;
                 const w = DD.window("Hello", (b) => {
                         b.label(`label ${count}`)
-                        if (b.button("click")) {
+                        if (b.button("+")) {
                                 count++;
+                        }
+                        if (b.button("-")) {
+                                count--;
+                        }
+                        for (let i = 0; i < count; i++) {
+                                b.label(`${i}`)
                         }
                 })
                 w.show()

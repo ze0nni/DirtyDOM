@@ -53,6 +53,9 @@ function window(title, f)  {
                         f({ label, button })
                 } while (events.shift())
 
+                if (ui.length != currentUI.length)
+                        isDirty = true;
+
                 ui = currentUI
                 currentUI = []
 
