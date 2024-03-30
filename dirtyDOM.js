@@ -31,24 +31,29 @@ styleEl.innerHTML = `
         background-color: ActiveText;
         padding:2px;
 }
-.dd_body, .dd_v, .dd_h {
-        display: flex;
-        gap: 4px;
-}
 .dd_body {
-        flex-direction: 'column';
+        display: flex;
+        flex-direction: column;
         padding:2px;
 }
-.dd_v {
-        flex-direction: 'row';
+.dd_h {
+        display: flex;
+        gap: 4px;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: left;
 }
 .dd_v {
-        flex-direction: 'column';
+        display: flex;
+        gap: 4px;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: top;
 }
 `
 
 function dispatchEvent(windowId, elementId, event) {
-        const w = windows[windowId];
+        const w = windows[windowId]
         if (w == null) return
         w.events.push([elementId, event])
         w.update()
@@ -62,6 +67,16 @@ function window(title, f)  {
         const windowId = `window_${windowsCounter++}`;
         const dialogEl = document.createElement('dialog')
         dialogEl.className = classes.dialog;
+
+        const headerEl = document.createElement('header')
+        headerEl.className = classes.header
+        dialogEl.appendChild(headerEl)        
+
+        const bodyEl = document.createElement('div')
+        bodyEl.className = classes.body
+        dialogEl.appendChild(bodyEl)
+
+        //makeDraggable(dialogEl)
         
         let isDirty = false;
         let ui = [];
@@ -73,7 +88,7 @@ function window(title, f)  {
                 events
         }
 
-        const builder = Object.freeze({ vGroup, hGroup, label, button, toggle, combo })
+        const builder = Object.freeze({ vBox, hBox, label, button, toggle, combo })
 
         rebuild();
 
@@ -101,9 +116,7 @@ function window(title, f)  {
         function rebuild() {
                 do {
                         currentUI.length = 0;
-                        appendUI('begin_b')
                         f(builder)
-                        appendUI('end_b')
                 } while (events.shift())
 
                 if (ui.length != currentUI.length)
@@ -116,18 +129,12 @@ function window(title, f)  {
                 isDirty = false;
 
                 const items = [
-                        `<header class="${classes.header}">${title}</header>`
+                        
                 ];
 
                 for (let id = 0; id < ui.length; id++) {
                         const [type, text, payload] = ui[id];
                         switch (type) {
-                                case 'begin_b':
-                                        items.push(`<div class="${classes.body}">`)
-                                        break;
-                                case 'end_b':
-                                        items.push(`</div>`)
-                                        break;
                                 case 'begin_v':
                                         items.push(`<div class="${classes.vertical}">`)
                                         break;
@@ -163,7 +170,7 @@ function window(title, f)  {
                         }
                 }
 
-                dialogEl.innerHTML = items.join('\n');
+                bodyEl.innerHTML = items.join('\n');
         }
 
         function appendUI(type, text, payload) {
@@ -178,13 +185,13 @@ function window(title, f)  {
                 if (events.length > 0 && events[0][0] == elementId) return events[0][1];
         }
 
-        function vGroup(g) {
+        function vBox(g) {
                 appendUI('begin_v')
                 g(builder)
                 appendUI('end_v')
         }
 
-        function hGroup(g) {
+        function hBox(g) {
                 appendUI('begin_h')
                 g(builder)
                 appendUI('end_h')
@@ -227,5 +234,53 @@ function window(title, f)  {
 }
 
 return { window, dispatchEvent }
+
+//https://codepen.io/marcusparsons/pen/NMyzgR
+function makeDraggable (element) {
+        // Make an element draggable (or if it has a .window-top class, drag based on the .window-top element)
+        let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
+    
+                    // If there is a window-top classed element, attach to that element instead of full window
+        if (element.querySelector('.window-top')) {
+            // If present, the window-top element is where you move the parent element from
+            element.querySelector('.window-top').onmousedown = dragMouseDown;
+        } 
+        else {
+            // Otherwise, move the element itself
+            element.onmousedown = dragMouseDown;
+        }
+    
+        function dragMouseDown (e) {
+            // Prevent any default action on this element (you can remove if you need this element to perform its default action)
+            e.preventDefault();
+            // Get the mouse cursor position and set the initial previous positions to begin
+            previousPosX = e.clientX;
+            previousPosY = e.clientY;
+            // When the mouse is let go, call the closing event
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves
+            document.onmousemove = elementDrag;
+        }
+    
+        function elementDrag (e) {
+            // Prevent any default action on this element (you can remove if you need this element to perform its default action)
+            e.preventDefault();
+            // Calculate the new cursor position by using the previous x and y positions of the mouse
+            currentPosX = previousPosX - e.clientX;
+            currentPosY = previousPosY - e.clientY;
+            // Replace the previous positions with the new x and y positions of the mouse
+            previousPosX = e.clientX;
+            previousPosY = e.clientY;
+            // Set the element's new position
+            element.style.top = (element.offsetTop - currentPosY) + 'px';
+            element.style.left = (element.offsetLeft - currentPosX) + 'px';
+        }
+    
+        function closeDragElement () {
+            // Stop moving when mouse button is released and release events
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
 
 })();
