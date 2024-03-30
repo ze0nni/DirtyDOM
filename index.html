@@ -9,6 +9,7 @@
         <script>
                 let count = 0;
                 let selected = 0;
+                var x = false;
                 const w = DD.window("Hello", (b) => {
                         b.label(`label ${count}`)
                         if (b.button("+")) {
@@ -21,6 +22,11 @@
                                 b.label(`${i}`)
                         }
                         selected = b.combo(selected, ["1", "2", "3"])
+                        
+                        b.vGroup((b) => {
+                                x = b.toggle(x)
+                                b.toggle(false)
+                        });
                 })
                 w.show()
         </script>

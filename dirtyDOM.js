@@ -8,6 +8,7 @@ const classes = {
         'header': 'dd_header',
         'button': 'dd_button',
         'label': 'dd_label',
+        'toggle': 'dd_toggle',
         'select': 'dd_select',
         'option': 'dd_option',
         'vertical': 'dd_v',
@@ -25,23 +26,24 @@ styleEl.innerHTML = `
         margin: 0px;
         padding:0px;
 }
-.dd_body {
-        padding:4px;
-}
 .dd_header {
         color: ActiveCaption;
         background-color: ActiveText;
         padding:2px;
 }
-.dd_v, .dd_h {
+.dd_body, .dd_v, .dd_h {
         display: flex;
         gap: 4px;
 }
-.dd_v {
-        flex-direction: 'row'
+.dd_body {
+        flex-direction: 'column';
+        padding:2px;
 }
 .dd_v {
-        flex-direction: 'column'
+        flex-direction: 'row';
+}
+.dd_v {
+        flex-direction: 'column';
 }
 `
 
@@ -50,6 +52,10 @@ function dispatchEvent(windowId, elementId, event) {
         if (w == null) return
         w.events.push([elementId, event])
         w.update()
+}
+
+function escapeHtml(text) {
+        return text;
 }
 
 function window(title, f)  {
@@ -67,7 +73,7 @@ function window(title, f)  {
                 events
         }
 
-        const builder = Object.freeze({ label, button, combo, vGroup, hGroup })
+        const builder = Object.freeze({ vGroup, hGroup, label, button, toggle, combo })
 
         rebuild();
 
@@ -135,19 +141,22 @@ function window(title, f)  {
                                         items.push(`</div>`)
                                         break;
                                 case 'label':
-                                        items.push(`<span class="${classes.label}">${text}</span>`)
+                                        items.push(`<span class="${classes.label}">${escapeHtml(text)}</span>`)
                                         break;
                                 case 'button':
-                                        items.push(`<button class="${classes.button}" onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'>${text}</button>`)
+                                        items.push(`<button class="${classes.button}" onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'>${escapeHtml(text)}</button>`)
+                                        break;
+                                case 'toggle':
+                                        items.push(`<input class="${classes.toggle}" type="checkbox" ${text ? 'checked' : ''}/ onchange='DD.dispatchEvent("${windowId}", ${id}, ["change", this.checked])'>`);
                                         break;
                                 case 'begin_combo':
-                                        items.push(`<select class="${classes.select}"  onchange='DD.dispatchEvent("${windowId}", ${id}, ["select", this.selectedIndex])'>`);
+                                        items.push(`<select class="${classes.select}" onchange='DD.dispatchEvent("${windowId}", ${id}, ["select", this.selectedIndex])'>`);
                                         break;
                                 case 'end_combo':
                                         items.push(`</select>`);
                                         break;
                                 case 'combo_item':
-                                        items.push(`<option class="${classes.option}"  ${payload ? "selected" : ""}>${text}</option>`);
+                                        items.push(`<option class="${classes.option}"  ${payload ? "selected" : ""}>${escapeHtml(text)}</option>`);
                                         break;
                                 default:
                                         console.warn('Unknown item', type)
@@ -171,13 +180,13 @@ function window(title, f)  {
 
         function vGroup(g) {
                 appendUI('begin_v')
-                g()
+                g(builder)
                 appendUI('end_v')
         }
 
         function hGroup(g) {
                 appendUI('begin_h')
-                g()
+                g(builder)
                 appendUI('end_h')
         }
 
@@ -187,6 +196,16 @@ function window(title, f)  {
 
         function label(text) {
                 appendUI('label', text) 
+        }
+
+        function toggle(value, text) {
+                if (text) label(text)
+                const event = appendUI('toggle', value)
+                if (event) {
+                        isDirty = true;
+                        if (event[0] == 'change') return event[1];
+                }
+                return value;
         }
 
         function combo(index, items) {
