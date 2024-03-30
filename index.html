@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+        <head>
+                <script src="./dirtyDOM.js"></script>
+        </head>
+        <body>
+
+        </body>
+        <script>
+                let count = 0;
+                const w = DD.window("Hello", (b) => {
+                        b.label(`label ${count}`)
+                        if (b.button("click")) {
+                                count++;
+                        }
+                })
+                w.show()
+        </script>
+</html>
