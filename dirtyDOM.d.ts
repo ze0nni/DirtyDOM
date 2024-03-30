@@ -1,21 +1,22 @@
 declare namespace DD {
-        declare type Window = readonly {
-                show();
-                hide();
-                update();
-                close();
+        type Window = {
+                show(): void;
+                hide(): void;
+                update(): void;
+                move(x: number, y: number): void;
+                close(): void;
         }
 
-        declare type WindowBuilder = readonly {
-                vGroup(f: WindowFunction): void;
-                hGroup(f: WindowFunction): void;
+        type WindowBuilder = {
+                vBox(f: WindowFunction): void;
+                hBox(f: WindowFunction): void;
                 label(text: string): void;
-                button(text: string): bool;
-                toggle(value: boolean, text?: string): bool;
+                button(text: string): boolean;
+                toggle(value: boolean, text?: string): boolean;
                 combo(selected: number, items: string[]): number;
         }
 
-        declare type WindowFunction = (builder: WindowBuilder) => void;
+        type WindowFunction = (builder: WindowBuilder) => void;
 
-        declare function window(title: string, f: WindowFunction): Window
+        function window(title: string, f: WindowFunction): Window
 }
