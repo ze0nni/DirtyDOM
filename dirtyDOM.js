@@ -70,13 +70,14 @@ function window(title, f)  {
 
         const headerEl = document.createElement('header')
         headerEl.className = classes.header
+        headerEl.append(title)
         dialogEl.appendChild(headerEl)        
 
         const bodyEl = document.createElement('div')
         bodyEl.className = classes.body
         dialogEl.appendChild(bodyEl)
 
-        //makeDraggable(dialogEl)
+        makeDraggable(dialogEl, headerEl)
         
         let isDirty = false;
         let ui = [];
@@ -236,19 +237,10 @@ function window(title, f)  {
 return { window, dispatchEvent }
 
 //https://codepen.io/marcusparsons/pen/NMyzgR
-function makeDraggable (element) {
+function makeDraggable (element, elementTop) {
         // Make an element draggable (or if it has a .window-top class, drag based on the .window-top element)
         let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
-    
-                    // If there is a window-top classed element, attach to that element instead of full window
-        if (element.querySelector('.window-top')) {
-            // If present, the window-top element is where you move the parent element from
-            element.querySelector('.window-top').onmousedown = dragMouseDown;
-        } 
-        else {
-            // Otherwise, move the element itself
-            element.onmousedown = dragMouseDown;
-        }
+        elementTop.onmousedown = dragMouseDown;
     
         function dragMouseDown (e) {
             // Prevent any default action on this element (you can remove if you need this element to perform its default action)
