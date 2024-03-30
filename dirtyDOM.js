@@ -95,7 +95,7 @@ function window(title, f)  {
 
         document.body.appendChild(dialogEl)
 
-        return { show, hide, update, close }
+        return { show, hide, update, move, close }
 
         function show() {
                 dialogEl.show()
@@ -112,6 +112,11 @@ function window(title, f)  {
         function close() {
                 dialogEl.remove()
                 delete windows[windowId]
+        }
+
+        function move(x, y) {
+                dialogEl.style.left = x + 'px';
+                dialogEl.style.top = y + 'px';
         }
 
         function rebuild() {
