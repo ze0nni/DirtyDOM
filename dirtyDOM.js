@@ -93,14 +93,9 @@ function window(title, f)  {
                 if (events.length > 0 && events[0][0] == elementId) return events[0][1];
         }
 
-        function button(text) {
-                return appendUI('button', text) == 'click';
-        }
+        function button(text) { return appendUI('button', text) == 'click'; }
 
-        function label(text) {
-
-                appendUI('label', text)
-        }
+        function label(text) { appendUI('label', text) }
 }
 
 return {window, dispatchEvent }
