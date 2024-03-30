@@ -7,6 +7,8 @@ const classes = {
         'header': 'dd_header',
         'button': 'dd_button',
         'label': 'dd_label',
+        'select': 'dd_select',
+        'option': 'dd_option',
         'vertical': 'dd_v',
         'horizontal': 'dd_h',
 }
@@ -80,7 +82,7 @@ function window(title, f)  {
                 do {
                         currentUI.length = 0;
                         appendUI('begin_v')
-                        f({ label, button })
+                        f({ label, button, combo })
                         appendUI('end_v')
                 } while (events.shift())
 
@@ -98,7 +100,7 @@ function window(title, f)  {
                 ];
 
                 for (let id = 0; id < ui.length; id++) {
-                        const [type, text] = ui[id];
+                        const [type, text, payload] = ui[id];
                         switch (type) {
                                 case 'begin_v':
                                         items.push(`<div class="${classes.vertical}">`)
@@ -118,20 +120,29 @@ function window(title, f)  {
                                 case 'button':
                                         items.push(`<button class="${classes.button}" onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'>${text}</button>`)
                                         break;
+                                case 'begin_combo':
+                                        items.push(`<select class="${classes.select}"  onchange='DD.dispatchEvent("${windowId}", ${id}, ["select", this.selectedIndex])'>`);
+                                        break;
+                                case 'end_combo':
+                                        items.push(`</select>`);
+                                        break;
+                                case 'combo_item':
+                                        items.push(`<option class="${classes.option}"  ${payload ? "selected" : ""}>${text}</option>`);
+                                        break;
                         }
                 }
 
                 dialogEl.innerHTML = items.join('\n');
         }
 
-        function appendUI(type, text) {
+        function appendUI(type, text, payload) {
                 const prev = ui[currentUI.length];
-                if (prev == null || prev[0] != type || prev[1] != text) {
+                if (prev == null || prev[0] !== type || prev[1] !== text) {
                         isDirty = true;
                 }
 
                 const elementId = currentUI.length;
-                currentUI.push([type, text])
+                currentUI.push([type, text, payload])
                 
                 if (events.length > 0 && events[0][0] == elementId) return events[0][1];
         }
@@ -142,6 +153,23 @@ function window(title, f)  {
 
         function label(text) {
                 appendUI('label', text) 
+        }
+
+        function combo(index, items) {
+                const event = appendUI('begin_combo', items[index])
+                if (event) {
+                        isDirty = true;
+                        if (event[0] == 'select') return event[1];
+                }
+                
+                for (let i = 0; i < items.length; i++) {
+                        const e = items[i];
+                        appendUI('combo_item', e, i == index)
+                }
+
+                appendUI('end_combo', items[index])
+
+                return index;
         }
 }
 

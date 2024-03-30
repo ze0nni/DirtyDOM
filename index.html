@@ -8,6 +8,7 @@
         </body>
         <script>
                 let count = 0;
+                let selected = 0;
                 const w = DD.window("Hello", (b) => {
                         b.label(`label ${count}`)
                         if (b.button("+")) {
@@ -19,6 +20,7 @@
                         for (let i = 0; i < count; i++) {
                                 b.label(`${i}`)
                         }
+                        selected = b.combo(selected, ["1", "2", "3"])
                 })
                 w.show()
         </script>
