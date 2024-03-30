@@ -4,6 +4,7 @@ let windowsCounter = 0;
 const windows = {}
 const classes = {
         'dialog': 'dd_dialog',
+        'body': 'dd_body',
         'header': 'dd_header',
         'button': 'dd_button',
         'label': 'dd_label',
@@ -20,8 +21,12 @@ styleEl.innerHTML = `
 .dd_dialog {
         color:WindowText;
         background-color: ButtonFace;
-        border:solid 1px ActiveBorder ;
+        border:solid 1px ActiveBorder;
+        margin: 0px;
         padding:0px;
+}
+.dd_body {
+        padding:4px;
 }
 .dd_header {
         color: ActiveCaption;
@@ -29,7 +34,14 @@ styleEl.innerHTML = `
         padding:2px;
 }
 .dd_v, .dd_h {
-        padding: 4px;
+        display: flex;
+        gap: 4px;
+}
+.dd_v {
+        flex-direction: 'row'
+}
+.dd_v {
+        flex-direction: 'column'
 }
 `
 
@@ -54,6 +66,8 @@ function window(title, f)  {
                 update,
                 events
         }
+
+        const builder = Object.freeze({ label, button, combo, vGroup, hGroup })
 
         rebuild();
 
@@ -81,9 +95,9 @@ function window(title, f)  {
         function rebuild() {
                 do {
                         currentUI.length = 0;
-                        appendUI('begin_v')
-                        f({ label, button, combo })
-                        appendUI('end_v')
+                        appendUI('begin_b')
+                        f(builder)
+                        appendUI('end_b')
                 } while (events.shift())
 
                 if (ui.length != currentUI.length)
@@ -102,6 +116,12 @@ function window(title, f)  {
                 for (let id = 0; id < ui.length; id++) {
                         const [type, text, payload] = ui[id];
                         switch (type) {
+                                case 'begin_b':
+                                        items.push(`<div class="${classes.body}">`)
+                                        break;
+                                case 'end_b':
+                                        items.push(`</div>`)
+                                        break;
                                 case 'begin_v':
                                         items.push(`<div class="${classes.vertical}">`)
                                         break;
@@ -115,7 +135,7 @@ function window(title, f)  {
                                         items.push(`</div>`)
                                         break;
                                 case 'label':
-                                        items.push(`<div class="${classes.label}">${text}</div>`)
+                                        items.push(`<span class="${classes.label}">${text}</span>`)
                                         break;
                                 case 'button':
                                         items.push(`<button class="${classes.button}" onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'>${text}</button>`)
@@ -129,6 +149,8 @@ function window(title, f)  {
                                 case 'combo_item':
                                         items.push(`<option class="${classes.option}"  ${payload ? "selected" : ""}>${text}</option>`);
                                         break;
+                                default:
+                                        console.warn('Unknown item', type)
                         }
                 }
 
@@ -145,6 +167,18 @@ function window(title, f)  {
                 currentUI.push([type, text, payload])
                 
                 if (events.length > 0 && events[0][0] == elementId) return events[0][1];
+        }
+
+        function vGroup(g) {
+                appendUI('begin_v')
+                g()
+                appendUI('end_v')
+        }
+
+        function hGroup(g) {
+                appendUI('begin_h')
+                g()
+                appendUI('end_h')
         }
 
         function button(text) { 
