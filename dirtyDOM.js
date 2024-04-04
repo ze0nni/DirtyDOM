@@ -56,7 +56,7 @@ function dispatchEvent(windowId, elementId, event) {
         const w = windows[windowId]
         if (w == null) return
         w.events.push([elementId, event])
-        w.update()
+        w.dirty()
 }
 
 function escapeHtml(text) {
@@ -80,12 +80,13 @@ function window(title, f)  {
         makeDraggable(dialogEl, headerEl)
         
         let isDirty = false;
+        let isChanged = false;
         let ui = [];
         let currentUI = [];
         let events = []
 
         windows[windowId] = {
-                update,
+                dirty,
                 events
         }
 
@@ -95,7 +96,7 @@ function window(title, f)  {
 
         document.body.appendChild(dialogEl)
 
-        return { show, hide, update, move, close }
+        return { show, hide, dirty, move, close }
 
         function show() {
                 dialogEl.show()
@@ -105,8 +106,16 @@ function window(title, f)  {
                 dialogEl.hide()
         }
 
-        function update() {
-                rebuild()
+        function dirty() {
+                if (isDirty) return;
+                isDirty = true;
+                requestAnimationFrame(() => {
+                        try {
+                                rebuild()
+                        } finally {
+                                isDirty = false;
+                        }
+                })
         }
 
         function close() {
@@ -126,13 +135,13 @@ function window(title, f)  {
                 } while (events.shift())
 
                 if (ui.length != currentUI.length)
-                        isDirty = true;
+                        isChanged = true;
 
                 ui = currentUI
                 currentUI = []
 
-                if (!isDirty) return;
-                isDirty = false;
+                if (!isChanged) return;
+                isChanged = false;
 
                 const items = [
                         
@@ -182,7 +191,7 @@ function window(title, f)  {
         function appendUI(type, text, payload) {
                 const prev = ui[currentUI.length];
                 if (prev == null || prev[0] !== type || prev[1] !== text) {
-                        isDirty = true;
+                        isChanged = true;
                 }
 
                 const elementId = currentUI.length;
@@ -215,7 +224,7 @@ function window(title, f)  {
                 if (text) label(text)
                 const event = appendUI('toggle', value)
                 if (event) {
-                        isDirty = true;
+                        isChanged = true;
                         if (event[0] == 'change') return event[1];
                 }
                 return value;
@@ -224,7 +233,7 @@ function window(title, f)  {
         function combo(index, items, map) {
                 const event = appendUI('begin_combo', items[index])
                 if (event) {
-                        isDirty = true;
+                        isChanged = true;
                         if (event[0] == 'select') return event[1];
                 }
                 

@@ -2,7 +2,7 @@ declare namespace DD {
         type Window = {
                 show(): void;
                 hide(): void;
-                update(): void;
+                dirty(): void;
                 move(x: number, y: number): void;
                 close(): void;
         }

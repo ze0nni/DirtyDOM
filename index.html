@@ -9,7 +9,8 @@
         <script>
                 let count = 10;
                 let selected = 0;
-                var x = false;
+                let x = false;
+                let y = true;
                 const w = DD.window("Hello", (b) => {
                         b.label(`label ${count}`)
                         b.hBox((b) => {
@@ -28,7 +29,7 @@
                         
                         b.vBox((b) => {
                                 x = b.toggle(x)
-                                b.toggle(false)
+                                y = b.toggle(y)
                         });
                 })
                 w.show()
