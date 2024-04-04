@@ -15,7 +15,7 @@
                 let y = true;
                 const w = DD.window("Hello", (b) => {
                         pageIndex = b.switcher(pageIndex, pages);
-
+                        b.hr();
                         b.label(`label ${count}`)
                         b.hBox((b) => {
                                 if (b.button("+")) {
@@ -24,13 +24,14 @@
                                 if (b.button("-")) {
                                         count--;
                                 }
+                                b.space();
+                                b.expand();
                                 for (let i = 0; i < count; i++) {
                                         b.label(`${i}`)
                                 }
                         })
-
+                        b.space();
                         selected = b.combo(selected, ["1", "2", "3"])
-                        
                         b.vBox((b) => {
                                 x = b.toggle(x)
                                 y = b.toggle(y)

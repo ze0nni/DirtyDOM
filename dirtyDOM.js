@@ -16,6 +16,7 @@ const classes = {
         'switcher_off': 'dd_switcher_btn dd_switcher_btn_off',
         'vertical': 'dd_v',
         'horizontal': 'dd_h',
+        'line': 'bb_line'
 }
 
 const styleEl = document.createElement('style')
@@ -38,6 +39,7 @@ styleEl.innerHTML = `
         display: flex;
         flex-direction: column;
         padding:2px;
+        gap: 4px;
 }
 .dd_h {
         display: flex;
@@ -63,9 +65,22 @@ styleEl.innerHTML = `
 .dd_switcher_btn {
         flex: 1;
 }
+.dd_switcher_btn {
+        cursor: default;
+        text-align: center;
+        border: solid 1px SelectedItem;
+}
 .dd_switcher_btn_on {
         color: SelectedItemText;
         background-color: SelectedItem;
+}
+.dd_switcher_btn_off {
+        cursor: pointer;
+}
+.bb_line {
+        min-width: 1px;
+        min-height: 1px;
+        background-color: GrayText;
 }
 `
 
@@ -109,7 +124,7 @@ function window(title, f)  {
                 events
         }
 
-        const builder = Object.freeze({ vBox, hBox, expand, label, button, toggle, combo, switcher })
+        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, button, toggle, combo, switcher })
 
         size(minWidth);
         rebuild();
@@ -191,6 +206,12 @@ function window(title, f)  {
                                                 style="${text}"
                                                 ></span>`)
                                         break;
+                                case 'space':
+                                        items.push('<span style="width: 1em; height: 1em"></span>');
+                                        break;
+                                case 'hr':
+                                        items.push(`<div class="${classes.line}"></div>`);
+                                        break;
                                 case 'label':
                                         items.push(`<span class="${classes.label}">${escapeHtml(text)}</span>`)
                                         break;
@@ -228,10 +249,10 @@ function window(title, f)  {
                                         items.push(`</div>`)
                                         break;
                                 case 'switch_button':
-                                        items.push(`<button
+                                        items.push(`<nav
                                                 class="${payload[0] ? classes.switcher_on : classes.switcher_off }"
                                                 onclick='DD.dispatchEvent("${windowId}", ${payload[1]}, ["select", ${payload[2]}])'
-                                                >${text}</button>`);
+                                                >${text}</nav>`);
                                         break;
                                 default:
                                         console.warn('Unknown item', type)
@@ -267,6 +288,14 @@ function window(title, f)  {
 
         function expand(grow) {
                 appendUI('expand', `flex-grow: ${grow ?? 1}`);
+        }
+
+        function space() {
+                appendUI('space')
+        }
+
+        function hr() {
+                appendUI('hr')
         }
 
         function button(text) { 
