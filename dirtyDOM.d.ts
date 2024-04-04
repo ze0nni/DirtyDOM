@@ -16,6 +16,9 @@ declare namespace DD {
                 combo<T>(selected: number, items: T[], map: (i: T) => string): number;
                 combo(selected: number, items: [string, unknown][]): number;
                 combo(selected: number, items: string[]): number;
+                switcher<T>(selected: number, items: T[], map: (i: T) => string): number;
+                switcher(selected: number, items: [string, unknown][]): number;
+                switcher(selected: number, items: string[]): number;
         }
 
         type WindowFunction = (builder: WindowBuilder) => void;

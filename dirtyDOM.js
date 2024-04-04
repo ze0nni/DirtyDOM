@@ -11,6 +11,9 @@ const classes = {
         'toggle': 'dd_toggle',
         'select': 'dd_select',
         'option': 'dd_option',
+        'switcher': 'dd_switcher',
+        'switcher_on': 'dd_switcher_btn dd_switcher_btn_on',
+        'switcher_off': 'dd_switcher_btn dd_switcher_btn_off',
         'vertical': 'dd_v',
         'horizontal': 'dd_h',
 }
@@ -27,8 +30,8 @@ styleEl.innerHTML = `
         padding:0px;
 }
 .dd_header {
-        color: ActiveCaption;
-        background-color: ActiveText;
+        color: SelectedItemText;
+        background-color: SelectedItem;
         padding:2px;
 }
 .dd_body {
@@ -49,6 +52,20 @@ styleEl.innerHTML = `
         flex-direction: column;
         align-items: flex-start;
         justify-content: top;
+}
+.dd_switcher {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: left;
+}
+.dd_switcher_btn {
+        flex: 1;
+}
+.dd_switcher_btn_on {
+        color: SelectedItemText;
+        background-color: SelectedItem;
 }
 `
 
@@ -90,7 +107,7 @@ function window(title, f)  {
                 events
         }
 
-        const builder = Object.freeze({ vBox, hBox, label, button, toggle, combo })
+        const builder = Object.freeze({ vBox, hBox, label, button, toggle, combo, switcher })
 
         rebuild();
 
@@ -166,19 +183,43 @@ function window(title, f)  {
                                         items.push(`<span class="${classes.label}">${escapeHtml(text)}</span>`)
                                         break;
                                 case 'button':
-                                        items.push(`<button class="${classes.button}" onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'>${escapeHtml(text)}</button>`)
+                                        items.push(`<button 
+                                                class="${classes.button}" 
+                                                onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'
+                                                >${escapeHtml(text)}</button>`)
                                         break;
                                 case 'toggle':
-                                        items.push(`<input class="${classes.toggle}" type="checkbox" ${text ? 'checked' : ''}/ onchange='DD.dispatchEvent("${windowId}", ${id}, ["change", this.checked])'>`);
+                                        items.push(`<input 
+                                                class="${classes.toggle}"
+                                                type="checkbox" ${text ? 'checked' : ''} 
+                                                onchange='DD.dispatchEvent("${windowId}", ${id}, ["change", this.checked])'
+                                                >`);
                                         break;
                                 case 'begin_combo':
-                                        items.push(`<select class="${classes.select}" onchange='DD.dispatchEvent("${windowId}", ${id}, ["select", this.selectedIndex])'>`);
+                                        items.push(`<select
+                                                class="${classes.select}"
+                                                onchange='DD.dispatchEvent("${windowId}", ${id}, ["select", this.selectedIndex])'
+                                                >`);
                                         break;
                                 case 'end_combo':
                                         items.push(`</select>`);
                                         break;
                                 case 'combo_item':
-                                        items.push(`<option class="${classes.option}"  ${payload ? "selected" : ""}>${escapeHtml(text)}</option>`);
+                                        items.push(`<option
+                                                class="${classes.option}"  ${payload ? "selected" : ""}
+                                                >${escapeHtml(text)}</option>`);
+                                        break;
+                                case 'begin_switcher':
+                                        items.push(`<div class="${classes.switcher}">`)
+                                        break;
+                                case 'end_switcher':
+                                        items.push(`</div>`)
+                                        break;
+                                case 'switch_button':
+                                        items.push(`<button
+                                                class="${payload[0] ? classes.switcher_on : classes.switcher_off }"
+                                                onclick='DD.dispatchEvent("${windowId}", ${payload[1]}, ["select", ${payload[2]}])'
+                                                >${text}</button>`);
                                         break;
                                 default:
                                         console.warn('Unknown item', type)
@@ -247,6 +288,28 @@ function window(title, f)  {
                 }
 
                 appendUI('end_combo', items[index])
+
+                return index;
+        }
+
+        function switcher(index, items, map) {
+                const event = appendUI('begin_switcher', items[index])
+                const switcherId = currentUI.length - 1;
+                if (event) {
+                        isChanged = true;
+                        if (event[0] == 'select') return event[1];
+                }
+                
+                for (let i = 0; i < items.length; i++) {
+                        const e = items[i];
+                        const text = 
+                                typeof e == 'string' && map == undefined ? e :
+                                Array.isArray(e) && map == undefined ? e[0] :
+                                map(e);
+                        appendUI('switch_button', text, [i == index, switcherId, i])
+                }
+
+                appendUI('end_switcher', items[index])
 
                 return index;
         }
