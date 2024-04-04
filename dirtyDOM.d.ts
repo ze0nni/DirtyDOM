@@ -13,6 +13,8 @@ declare namespace DD {
                 label(text: string): void;
                 button(text: string): boolean;
                 toggle(value: boolean, text?: string): boolean;
+                combo<T>(selected: number, items: T[], map: (i: T) => string): number;
+                combo(selected: number, items: [string, unknown][]): number;
                 combo(selected: number, items: string[]): number;
         }
 

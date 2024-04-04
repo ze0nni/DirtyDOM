@@ -221,7 +221,7 @@ function window(title, f)  {
                 return value;
         }
 
-        function combo(index, items) {
+        function combo(index, items, map) {
                 const event = appendUI('begin_combo', items[index])
                 if (event) {
                         isDirty = true;
@@ -230,7 +230,11 @@ function window(title, f)  {
                 
                 for (let i = 0; i < items.length; i++) {
                         const e = items[i];
-                        appendUI('combo_item', e, i == index)
+                        const text = 
+                                typeof e == 'string' && map == undefined ? e :
+                                Array.isArray(e) && map == undefined ? e[0] :
+                                map(e);
+                        appendUI('combo_item', text, i == index)
                 }
 
                 appendUI('end_combo', items[index])
