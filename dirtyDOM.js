@@ -69,6 +69,8 @@ styleEl.innerHTML = `
 }
 `
 
+const minWidth = 250;
+
 function dispatchEvent(windowId, elementId, event) {
         const w = windows[windowId]
         if (w == null) return
@@ -109,11 +111,12 @@ function window(title, f)  {
 
         const builder = Object.freeze({ vBox, hBox, expand, label, button, toggle, combo, switcher })
 
+        size(minWidth);
         rebuild();
 
         document.body.appendChild(dialogEl)
 
-        return { show, hide, dirty, move, close }
+        return { show, hide, dirty, move, size, close }
 
         function show() {
                 dialogEl.show()
@@ -143,6 +146,10 @@ function window(title, f)  {
         function move(x, y) {
                 dialogEl.style.left = x + 'px';
                 dialogEl.style.top = y + 'px';
+        }
+
+        function size(size) {
+                dialogEl.style.minWidth = size + 'px';
         }
 
         function rebuild() {

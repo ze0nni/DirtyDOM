@@ -4,6 +4,7 @@ declare namespace DD {
                 hide(): void;
                 dirty(): void;
                 move(x: number, y: number): void;
+                size(minWidth: number): void;
                 close(): void;
         }
 
