@@ -61,6 +61,8 @@ styleEl.innerHTML = `
         flex-direction: row;
         align-items: stretch;
         justify-content: left;
+        border-top: 1px solid SelectedItem;
+	border-left: 1px solid SelectedItem;
 }
 .dd_switcher_btn {
         flex: 1;
@@ -68,7 +70,9 @@ styleEl.innerHTML = `
 .dd_switcher_btn {
         cursor: default;
         text-align: center;
-        border: solid 1px SelectedItem;
+        padding: 4px;
+        border-right: 1px solid SelectedItem;
+        border-bottom: 1px solid SelectedItem;
 }
 .dd_switcher_btn_on {
         color: SelectedItemText;
@@ -222,11 +226,15 @@ function window(title, f)  {
                                                 >${escapeHtml(text)}</button>`)
                                         break;
                                 case 'toggle':
-                                        items.push(`<input 
+                                        items.push(`<div>
+                                                <input
+                                                id="dd_${windowId}_${id}"
                                                 class="${classes.toggle}"
-                                                type="checkbox" ${text ? 'checked' : ''} 
+                                                type="checkbox" ${payload ? 'checked' : ''} 
                                                 onchange='DD.dispatchEvent("${windowId}", ${id}, ["change", this.checked])'
-                                                >`);
+                                                >
+                                                <label for="dd_${windowId}_${id}">${text}</label>
+                                                </div>`);
                                         break;
                                 case 'begin_combo':
                                         items.push(`<select
@@ -307,8 +315,7 @@ function window(title, f)  {
         }
 
         function toggle(value, text) {
-                if (text) label(text)
-                const event = appendUI('toggle', value)
+                const event = appendUI('toggle', text, value)
                 if (event) {
                         isChanged = true;
                         if (event[0] == 'change') return event[1];
