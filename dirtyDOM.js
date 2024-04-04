@@ -107,7 +107,7 @@ function window(title, f)  {
                 events
         }
 
-        const builder = Object.freeze({ vBox, hBox, label, button, toggle, combo, switcher })
+        const builder = Object.freeze({ vBox, hBox, expand, label, button, toggle, combo, switcher })
 
         rebuild();
 
@@ -178,6 +178,11 @@ function window(title, f)  {
                                         break;
                                 case 'end_h':
                                         items.push(`</div>`)
+                                        break;
+                                case 'expand':
+                                        items.push(`<span
+                                                style="${text}"
+                                                ></span>`)
                                         break;
                                 case 'label':
                                         items.push(`<span class="${classes.label}">${escapeHtml(text)}</span>`)
@@ -251,6 +256,10 @@ function window(title, f)  {
                 appendUI('begin_h')
                 g(builder)
                 appendUI('end_h')
+        }
+
+        function expand(grow) {
+                appendUI('expand', `flex-grow: ${grow ?? 1}`);
         }
 
         function button(text) { 

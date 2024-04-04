@@ -10,6 +10,7 @@ declare namespace DD {
         type WindowBuilder = {
                 vBox(f: WindowFunction): void;
                 hBox(f: WindowFunction): void;
+                expand(grow?: number): void;
                 label(text: string): void;
                 button(text: string): boolean;
                 toggle(value: boolean, text?: string): boolean;
