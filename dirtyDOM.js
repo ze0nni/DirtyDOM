@@ -46,15 +46,19 @@ styleEl.innerHTML = `
         display: flex;
         gap: 4px;
         flex-direction: row;
-        align-items: flex-start;
+        align-items: stretch;
         justify-content: left;
 }
 .dd_v {
         display: flex;
         gap: 4px;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         justify-content: top;
+}
+.dd_select {
+        display: flex;
+        flex-grow: 1;
 }
 .dd_switcher {
         width: 100%;
@@ -83,6 +87,8 @@ styleEl.innerHTML = `
         cursor: pointer;
 }
 .bb_line {
+        display: flex;
+        flex-grow: 1;
         min-width: 1px;
         min-height: 1px;
         background-color: GrayText;
@@ -234,7 +240,7 @@ function window(title, f)  {
                                                 type="checkbox" ${payload ? 'checked' : ''} 
                                                 onchange='DD.dispatchEvent("${windowId}", ${id}, ["change", this.checked])'
                                                 >
-                                                <label for="dd_${windowId}_${id}">${text}</label>
+                                                <label for="dd_${windowId}_${id}">${text??''}</label>
                                                 </div>`);
                                         break;
                                 case 'begin_combo':
