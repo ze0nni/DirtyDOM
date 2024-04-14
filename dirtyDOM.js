@@ -42,7 +42,7 @@ styleEl.innerHTML = `
         gap: 4px;
 }
 .dd_h {
-        width: 100%;
+        flex-grow: 1;
         display: flex;
         gap: 4px;
         flex-direction: row;
@@ -56,12 +56,15 @@ styleEl.innerHTML = `
         align-items: stretch;
         justify-content: top;
 }
+.dd_button {
+        flex-grow: 1;
+}
 .dd_select {
         display: flex;
         flex-grow: 1;
 }
 .dd_switcher {
-        width: 100%;
+        flex-grow: 1;
         display: flex;
         flex-direction: row;
         align-items: stretch;
@@ -302,7 +305,7 @@ function window(title, f)  {
         }
 
         function expand(grow) {
-                appendUI('expand', `flex-grow: ${grow ?? 1}`);
+                appendUI('expand', `flex-grow: ${(grow ?? 1) * 1000}`);
         }
 
         function space() {
@@ -331,6 +334,8 @@ function window(title, f)  {
         }
 
         function combo(index, items, map) {
+                index = Math.max(0, Math.min(index, items.length - 1));
+
                 const event = appendUI('begin_combo', items[index])
                 if (event) {
                         isChanged = true;
@@ -352,6 +357,8 @@ function window(title, f)  {
         }
 
         function switcher(index, items, map) {
+                index = Math.max(0, Math.min(index, items.length - 1));
+
                 const event = appendUI('begin_switcher', items[index])
                 const switcherId = currentUI.length - 1;
                 if (event) {
