@@ -23,6 +23,8 @@ declare namespace DD {
                 switcher<T>(selected: number, items: readonly T[], map: (i: T) => string): number;
                 switcher(selected: number, items: readonly [string, unknown][]): number;
                 switcher(selected: number, items: readonly string[]): number;
+                
+                pushStyle(style: string, value: string): WindowBuilder;
         }
 
         type WindowFunction = (builder: WindowBuilder) => void;

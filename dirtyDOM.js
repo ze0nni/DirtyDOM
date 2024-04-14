@@ -132,13 +132,14 @@ function window(title, f)  {
         let ui = [];
         let currentUI = [];
         let events = []
+        const nextStyles = [];
 
         windows[windowId] = {
                 dirty,
                 events
         }
 
-        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, button, toggle, combo, switcher })
+        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, button, toggle, combo, switcher, pushStyle })
 
         size(minWidth);
         rebuild();
@@ -181,6 +182,13 @@ function window(title, f)  {
                 dialogEl.style.minWidth = size + 'px';
         }
 
+        function styleAttr() {
+                if (nextStyles.length == 0) return '';
+                const s = nextStyles.map(([s, v]) => `${s}: ${v}`).join(';');
+                nextStyles.length = 0;
+                return s;
+        }
+
         function rebuild() {
                 do {
                         currentUI.length = 0;
@@ -201,37 +209,48 @@ function window(title, f)  {
                 ];
 
                 for (let id = 0; id < ui.length; id++) {
-                        const [type, text, payload] = ui[id];
+                        const [type, text, payload, style] = ui[id];
                         switch (type) {
                                 case 'begin_v':
-                                        items.push(`<div class="${classes.vertical}">`)
+                                        items.push(`<div class="${classes.vertical}" style="${style}"}>`)
                                         break;
                                 case 'end_v':
                                         items.push(`</div>`)
                                         break;
                                 case 'begin_h':
-                                        items.push(`<div class="${classes.horizontal}">`)
+                                        items.push(`<div
+                                                class="${classes.horizontal}"
+                                                style="${style}"}>`)
                                         break;
                                 case 'end_h':
                                         items.push(`</div>`)
                                         break;
                                 case 'expand':
                                         items.push(`<span
-                                                style="${text}"
+                                        style="${text};${style}"
                                                 ></span>`)
                                         break;
                                 case 'space':
-                                        items.push('<span style="width: 1em; height: 1em"></span>');
+                                        items.push(`<span 
+                                                style="width: 1em; height: 1em;${style}"
+                                                ></span>`);
                                         break;
                                 case 'hr':
-                                        items.push(`<div class="${classes.line}"></div>`);
+                                        items.push(`<div
+                                                class="${classes.line}"
+                                                style="${style}"
+                                                ></div>`);
                                         break;
                                 case 'label':
-                                        items.push(`<span class="${classes.label}">${escapeHtml(text)}</span>`)
+                                        items.push(`<span
+                                                class="${classes.label}"
+                                                style="${style}"
+                                                >${escapeHtml(text)}</span>`)
                                         break;
                                 case 'button':
                                         items.push(`<button 
-                                                class="${classes.button}" 
+                                                class="${classes.button}"
+                                                style="${style}"
                                                 onclick='DD.dispatchEvent("${windowId}", ${id}, "click")'
                                                 >${escapeHtml(text)}</button>`)
                                         break;
@@ -240,6 +259,7 @@ function window(title, f)  {
                                                 <input
                                                 id="dd_${windowId}_${id}"
                                                 class="${classes.toggle}"
+                                                style="${style}"
                                                 type="checkbox" ${payload ? 'checked' : ''} 
                                                 onchange='DD.dispatchEvent("${windowId}", ${id}, ["change", this.checked])'
                                                 >
@@ -249,6 +269,7 @@ function window(title, f)  {
                                 case 'begin_combo':
                                         items.push(`<select
                                                 class="${classes.select}"
+                                                style="${style}"
                                                 onchange='DD.dispatchEvent("${windowId}", ${id}, ["select", this.selectedIndex])'
                                                 >`);
                                         break;
@@ -257,11 +278,13 @@ function window(title, f)  {
                                         break;
                                 case 'combo_item':
                                         items.push(`<option
-                                                class="${classes.option}"  ${payload ? "selected" : ""}
+                                                class="${classes.option}"
+                                                style="${style}"
+                                                ${payload ? "selected" : ""}
                                                 >${escapeHtml(text)}</option>`);
                                         break;
                                 case 'begin_switcher':
-                                        items.push(`<div class="${classes.switcher}">`)
+                                        items.push(`<div class="${classes.switcher}" ${styleAttr()}>`)
                                         break;
                                 case 'end_switcher':
                                         items.push(`</div>`)
@@ -269,6 +292,7 @@ function window(title, f)  {
                                 case 'switch_button':
                                         items.push(`<nav
                                                 class="${payload[0] ? classes.switcher_on : classes.switcher_off }"
+                                                style="${style}"
                                                 onclick='DD.dispatchEvent("${windowId}", ${payload[1]}, ["select", ${payload[2]}])'
                                                 >${text}</nav>`);
                                         break;
@@ -287,7 +311,7 @@ function window(title, f)  {
                 }
 
                 const elementId = currentUI.length;
-                currentUI.push([type, text, payload])
+                currentUI.push([type, text, payload, styleAttr()])
                 
                 if (events.length > 0 && events[0][0] == elementId) return events[0][1];
         }
@@ -378,6 +402,10 @@ function window(title, f)  {
                 appendUI('end_switcher', items[index])
 
                 return index;
+        }
+
+        function pushStyle(style, value) {
+                nextStyles.push([style, value])
         }
 }
 
