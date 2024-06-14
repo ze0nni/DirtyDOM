@@ -25,6 +25,9 @@ const w = DD.window("Hello", (b) => {
 })
 w.show()
 w.move(100, 100)
+
+// Repaint window with new data
+w.dirty()
 ````
 
 ![Preview](window.png)
