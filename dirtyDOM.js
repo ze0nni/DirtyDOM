@@ -104,10 +104,11 @@ function dispatchEvent(windowId, elementId, event) {
         const w = windows[windowId]
         if (w == null) return
         w.events.push([elementId, event])
-        w.dirty()
+        w.dirty();
 }
 
 function setFocus(windowId, elementId) {
+        return;
         const w = windows[windowId];
         if (w == null) return
         w.focusId = elementId;
