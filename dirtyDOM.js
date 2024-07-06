@@ -107,6 +107,12 @@ function dispatchEvent(windowId, elementId, event) {
         w.dirty()
 }
 
+function setFocus(windowId, elementId) {
+        const w = windows[windowId];
+        if (w == null) return
+        w.focusId = elementId;
+}
+
 function escapeHtml(text) {
         return text;
 }
@@ -134,12 +140,13 @@ function window(title, f)  {
         let events = []
         const nextStyles = [];
 
-        windows[windowId] = {
+        const wnd = {
                 dirty,
                 events
         }
+        windows[windowId] = wnd;
 
-        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, button, toggle, combo, switcher, pushStyle })
+        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, button, toggle, combo, switcher, text, textarea, pushStyle })
 
         size(minWidth);
         rebuild();
@@ -294,7 +301,27 @@ function window(title, f)  {
                                                 class="${payload[0] ? classes.switcher_on : classes.switcher_off }"
                                                 style="${style}"
                                                 onclick='DD.dispatchEvent("${windowId}", ${payload[1]}, ["select", ${payload[2]}])'
-                                                >${text}</nav>`);
+                                                >${text}</nav>`)
+                                        break;
+                                case 'text':
+                                        items.push(`<input
+                                                id='element-${windowId}-${id}'
+                                                type='text'
+                                                style="${style}"
+                                                value="${escapeHtml(text)}"
+                                                onfocus='DD.setFocus("${windowId}", ${id})'
+                                                onblur='DD.dispatchEvent("${windowId}", ${id}, ["changed", this.value])'
+                                                >`)
+                                        break;
+                                case 'textarea':
+                                        items.push(`<textarea
+                                                id='element-${windowId}-${id}'
+                                                type='text'
+                                                style="resize: none;${style}"
+                                                ${ payload ? `rows="${payload}"` : ''}
+                                                onfocus='DD.setFocus("${windowId}", ${id})'
+                                                onblur='DD.dispatchEvent("${windowId}", ${id}, ["changed", this.value])'
+                                                >${escapeHtml(text)}</textarea>`)
                                         break;
                                 default:
                                         console.warn('Unknown item', type)
@@ -302,6 +329,16 @@ function window(title, f)  {
                 }
 
                 bodyEl.innerHTML = items.join('\n');
+
+                const focusId = wnd.focusId;
+                delete wnd.focusId
+
+                if (focusId !== undefined) {
+                        const el = document.getElementById(`element-${windowId}-${focusId}`);
+                        if (el) {
+                                el.focus();
+                        }
+                }
         }
 
         function appendUI(type, text, payload) {
@@ -404,12 +441,36 @@ function window(title, f)  {
                 return index;
         }
 
+        function text(value) {
+                const event = appendUI('text', value);
+
+                if (event) {
+                        isChanged = true;
+                        if (event[0] == 'changed') {
+                                return event[1];
+                        }
+                }
+                return value;
+        }
+
+        function textarea(value, rows) {
+                const event = appendUI('textarea', value, rows);
+
+                if (event) {
+                        isChanged = true;
+                        if (event[0] == 'changed') {
+                                return event[1];
+                        }
+                }
+                return value;
+        }
+
         function pushStyle(style, value) {
                 nextStyles.push([style, value])
         }
 }
 
-return { window, dispatchEvent }
+return { window, dispatchEvent, setFocus }
 
 //https://codepen.io/marcusparsons/pen/NMyzgR
 function makeDraggable (element, elementTop) {
