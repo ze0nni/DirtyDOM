@@ -96,7 +96,9 @@ let singleIndex = 0;
 let multiSelect = []
 
 singleIndex = dd.filter(singleIndex, strings);
-multiSelect = dd.filter(multiSelect, strings);
+if(dd.filter(multiSelect, strings)) {
+        console.log("selection changed");
+}
 ```
 
 
