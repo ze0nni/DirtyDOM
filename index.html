@@ -7,36 +7,104 @@
 
         </body>
         <script>
-                let pageIndex = 0;
-                let pages = ["foo", "bar", "baz"];
-                let count = 10;
-                let selected = 0;
-                let x = false;
-                let y = true;
-                const w = DD.window("Hello", (b) => {
-                        pageIndex = b.switcher(pageIndex, pages);
-                        b.hr();
-                        b.label(`label ${count}`)
-                        b.hBox((b) => {
-                                if (b.button("+")) {
-                                        count++;
-                                }
-                                if (b.button("-")) {
-                                        count--;
-                                }
-                                b.space();
-                                b.expand();
-                                for (let i = 0; i < count; i++) {
-                                        b.label(`${i}`)
-                                }
-                        })
-                        b.space();
-                        selected = b.combo(selected, ["1", "2", "3"])
-                        b.vBox((b) => {
-                                x = b.toggle(x, "x")
-                                y = b.toggle(y, "y")
-                        });
+                let selectedPage = 0;
+                const pages = [CommonPage(), ListPage(), RichPage()];
+
+                const w = DD.window("Hello", dd => {
+                        selectedPage = dd.switcher(selectedPage, pages, p => p.title);
+                        pages[selectedPage]?.body(dd);
                 })
+
+                function CommonPage() {
+                        let counter = 0;
+                        return {
+                                title: "Common",
+                                body: dd => {
+                                        dd.space(20);
+
+                                        if (dd.button("+")) counter++;
+                                        dd.label(`count: ${counter}`);
+                                        if (dd.button("-")) counter--;
+
+                                        dd.space(20);
+
+                                        dd.hBox(dd => {
+                                                if (dd.button("-")) counter--;
+                                                dd.expand();
+                                                dd.label(`count: ${counter}`);
+                                                dd.expand();
+                                                if (dd.button("+")) counter++;
+                                        });
+                                }
+                        }
+                }
+
+                function ListPage() {
+                        let list = [-2, -1, 0, 1, 2];
+                        return {
+                                title: "List",
+                                body: dd => {
+
+                                        for (var i = 0; i < list.length; i++) {
+                                                dd.hBox(dd => {
+                                                        if (list[i] <= 0)
+                                                                dd.pushStyle("color", "red");
+
+                                                        dd.label(list[i]);
+                                                        dd.expand();
+                                                        if (dd.button("-")) list[i]--;
+                                                        if (dd.button("+")) list[i]++;
+                                                        
+                                                        dd.pushStyle("color", "red");
+                                                        if (dd.button('x') && confirm("remove element?")) {
+                                                                list.splice(i, 1);
+                                                        }
+                                                })
+                                        }
+
+                                        if (dd.button("append element")) {
+                                                list.push(0);
+                                        }  
+                                }
+                        }
+                }
+
+                function RichPage() {
+                        const data = [
+                                "Anabel Francois",
+                                "Delanie Brinkley",
+                                "Rocco Pepper",
+                                "Emelia Hardman",
+                                "Sidney Donnelly",
+                                "Ahmad Kane",
+                                "Nathaly Daley",
+                                "Jaren Beaver",
+                                "Madalynn Russ",
+                                "Deonte Beach",
+                                "Jamir Churchill",
+                                "Dawn Carrera",
+                                "Nelly Forsythe",
+                                "Dakotah Kay",
+                                "Amiah Wirth",
+                                "Monique Osborn",
+                                "Franklin Champagne",
+                                "Yesenia Dorsey",
+                                "Patrick Albert",
+                                "Randy Hoke",
+                        ];
+                        let selected = 0;
+                        return {
+                                title: "Rich",
+                                body: dd => {
+                                        selected = dd.filter(selected, data);
+
+                                        dd.header(`selected: ${selected}`);
+
+                                        data[selected] = dd.text(data[selected]);
+                                }
+                        }
+                }
+
                 w.show()
                 w.move(100, 100)
         </script>
