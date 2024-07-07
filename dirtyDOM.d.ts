@@ -15,6 +15,7 @@ declare namespace DD {
                 hr(): void;
                 expand(grow?: number): void;
                 label(text: string): void;
+                header(text: string): void;
                 button(text: string): boolean;
                 toggle(value: boolean, text?: string): boolean;
                 combo<T>(selected: number, items: readonly T[], map: (i: T) => string): number;
@@ -25,6 +26,8 @@ declare namespace DD {
                 switcher(selected: number, items: readonly string[]): number;
                 text(value: string): string;
                 textarea(value: string, rows?: number): string;
+                filter<T>(selected: number, items: readonly T[], map: (i: T) => string, filter?: (s: string, i: T) => boolean|'disabled'): number;
+                filter<T>(selected: number[], items: readonly T[], map: (i: T) => string, filter?: (s: string, i: T) => boolean|'disabled'): boolean;
                 
                 pushStyle(style: string, value: string): WindowBuilder;
         }

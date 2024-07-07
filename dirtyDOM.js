@@ -89,12 +89,29 @@ styleEl.innerHTML = `
 .dd_switcher_btn_off {
         cursor: pointer;
 }
+.dd_switcher_btn_off:hover {
+        cursor: pointer;
+        background-color: color-mix(in srgb, SelectedItem, transparent 50%);
+}
 .bb_line {
         display: flex;
         flex-grow: 1;
         min-width: 1px;
         min-height: 1px;
         background-color: GrayText;
+}
+
+.bb_input_filter {
+        padding-right: 1.5em;
+        background: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgdmlld0JveD0iMCAwIDI0IDI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0xNS4yNSAwYTguMjUgOC4yNSAwIDAgMC02LjE4IDEzLjcyTDEgMjIuODhsMS4xMiAxIDguMDUtOS4xMkE4LjI1MSA4LjI1MSAwIDEgMCAxNS4yNS4wMXptMCAxNWE2Ljc1IDYuNzUgMCAxIDEgMC0xMy41IDYuNzUgNi43NSAwIDAgMSAwIDEzLjUiLz48L3N2Zz4=" ) no-repeat right;
+        background-size: 1em;
+        color: WindowText;
+        background-color: Window;
+}
+.bb_input_filter_content {
+        background-color: Window;
+        border:solid 1px ActiveBorder;
+        overflow-y: scroll;
 }
 `
 
@@ -139,6 +156,8 @@ function window(title, f)  {
         let ui = [];
         let currentUI = [];
         let events = []
+        const postRender = [
+        ]
         const nextStyles = [];
 
         const wnd = {
@@ -147,10 +166,10 @@ function window(title, f)  {
         }
         windows[windowId] = wnd;
 
-        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, button, toggle, combo, switcher, text, textarea, pushStyle })
+        const builder = Object.freeze({ vBox, hBox, expand, space, hr, label, header, button, toggle, combo, switcher, text, textarea, filter, pushStyle })
 
         size(minWidth);
-        rebuild();
+        dirty();
 
         document.body.appendChild(dialogEl)
 
@@ -167,12 +186,17 @@ function window(title, f)  {
         function dirty() {
                 if (isDirty) return;
                 isDirty = true;
+
                 requestAnimationFrame(() => {
                         try {
                                 rebuild()
                         } finally {
                                 isDirty = false;
                         }
+                        for (var p of postRender) {
+                                p();
+                        }
+                        postRender.length = 0;
                 })
         }
 
@@ -198,6 +222,7 @@ function window(title, f)  {
         }
 
         function rebuild() {
+                postRender.length = 0;
                 do {
                         currentUI.length = 0;
                         f(builder)
@@ -252,6 +277,12 @@ function window(title, f)  {
                                 case 'label':
                                         items.push(`<span
                                                 class="${classes.label}"
+                                                style="${style}"
+                                                >${escapeHtml(text)}</span>`)
+                                        break;
+                                case 'header':
+                                        items.push(`<span
+                                                class="${classes.header}"
                                                 style="${style}"
                                                 >${escapeHtml(text)}</span>`)
                                         break;
@@ -324,6 +355,32 @@ function window(title, f)  {
                                                 onblur='DD.dispatchEvent("${windowId}", ${id}, ["changed", this.value])'
                                                 >${escapeHtml(text)}</textarea>`)
                                         break;
+
+                                case 'filter':
+                                        items.push(`<input
+                                                id='element-${windowId}-${id}'
+                                                type='text'
+                                                style="${style}"
+                                                class="bb_input_filter"
+                                                value=""
+                                                placeholder="Filter"
+                                                onchange='DD.dispatchEvent("${windowId}", ${id}, "changed")'
+                                                onkeydown='DD.dispatchEvent("${windowId}", ${id}, "changed")'
+                                                onpaste='DD.dispatchEvent("${windowId}", ${id}, "changed")'
+                                                input='DD.dispatchEvent("${windowId}", ${id}, "changed")'
+                                                >`);
+                                        items.push(`<div
+                                                id='element-${windowId}-${id}-content'
+                                                style="height:8em;${style}"
+                                                class="bb_input_filter_content"
+                                                >
+                                                </div>`);
+                                        postRender.push(() => dispatchEvent(windowId, id, "changed"))
+                                        if (payload.scrollTop) {
+                                                postRender.push(() => dispatchEvent(windowId, id, ['scroll-top', payload.scrollTop]));
+                                        }
+                                        break;
+
                                 default:
                                         console.warn('Unknown item', type)
                         }
@@ -352,6 +409,10 @@ function window(title, f)  {
                 currentUI.push([type, text, payload, styleAttr()])
                 
                 if (events.length > 0 && events[0][0] == elementId) return events[0][1];
+        }
+
+        function getLastElementId() {
+                return currentUI.length - 1;
         }
 
         function vBox(g) {
@@ -384,6 +445,10 @@ function window(title, f)  {
 
         function label(text) {
                 appendUI('label', text) 
+        }
+
+        function header(text) {
+                appendUI('header', text) 
         }
 
         function toggle(value, text) {
@@ -464,6 +529,124 @@ function window(title, f)  {
                         }
                 }
                 return value;
+        }
+
+        function filter(selected, items, map, filter) {
+                const payload = {
+
+                }
+                const event = appendUI('filter', "", payload);
+
+                const contentEl = document.getElementById(`element-${windowId}-${getLastElementId()}-content`);
+                if (contentEl) {
+                        payload.scrollTop = contentEl.scrollTop;
+                }
+
+                if (event == 'changed') {
+                        rebuildFilter(getLastElementId(), selected, items, map, filter);
+
+                        if (Array.isArray(selected)) return false;
+                        return selected;
+                }
+
+                if (event && event[0] == 'click') {
+                        const itemIndex = event[1];
+
+                        if (Array.isArray(selected)) {
+                                const selectedIndex = selected.indexOf(itemIndex);
+                                if (selectedIndex == -1) {
+                                        selected.unshift(itemIndex);
+                                } else {
+                                        selected.splice(selectedIndex, 1);
+                                }
+
+                                isChanged = true;
+                                return true;
+                        } else {
+                                isChanged = true;
+                                return itemIndex;
+                        }
+                }
+
+                if (event && event[0] == 'scroll-top') {
+                        const contentEl = document.getElementById(`element-${windowId}-${getLastElementId()}-content`);
+                        if (contentEl) {
+                                contentEl.scrollTop = event[1];
+                        }
+                }
+
+                if (Array.isArray(selected)) {
+                        for (let i = items.length; i --> 0;) {
+                                if (items[i] >= items.length) {
+                                        items.splice(i, 1);
+                                }
+                        }
+                        return false;
+                }
+                return selected;
+        }
+
+
+        function rebuildFilter(id, selected, items, map, filter) {
+                const inputEl = document.getElementById(`element-${windowId}-${id}`);
+                const contentEl = document.getElementById(`element-${windowId}-${id}-content`);
+                if (inputEl == null || contentEl == null) {
+                        contentEl.warn('filter el not found')
+                        return;
+                }
+
+                const filterText = inputEl.value;
+                {
+                        for (let i = contentEl.children.length; 
+                                i < items.length; 
+                                i++) 
+                        {
+                                const lineEl = document.createElement('div');
+                                contentEl.appendChild(lineEl);
+                                lineEl.onclick = () => dispatchEvent(windowId, id, ['click', i]);
+                        }
+                }
+
+                let counter = 0;
+
+                const isSelectedArray = Array.isArray(selected);
+
+                for (let lineEl of contentEl.children) {
+                        const index = counter++;
+                        const item = items[index];
+
+                        let skip = false;
+                        if (item == null) skip = true;
+
+                        const text = item == null ? null
+                                : map == null ? item
+                                : map(item)
+
+                        if (!skip && text !== null && filter && !filter(filterText, item))
+                                skip = true;
+                        if (!skip && !filter && typeof text == 'string' && text.indexOf(filterText) == -1)
+                                skip = true;
+
+                        if (skip) {
+                                lineEl.style.display = "none";
+                                continue;
+                        }
+
+                        lineEl.style.display = "block";
+                        const isSelected = isSelectedArray 
+                                ? selected.indexOf(index) != -1
+                                : selected == index;
+
+                        if (isSelected) {
+                                lineEl.classList.add('dd_switcher_btn_on');
+                                lineEl.classList.remove('dd_switcher_btn_off');
+                        } else {
+                                lineEl.classList.remove('dd_switcher_btn_on');
+                                lineEl.classList.add('dd_switcher_btn_off');
+                        }
+
+                        lineEl.innerHTML = text;
+                }
         }
 
         function pushStyle(style, value) {
