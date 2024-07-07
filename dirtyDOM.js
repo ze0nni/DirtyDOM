@@ -362,7 +362,7 @@ function window(title, f)  {
                                                 type='text'
                                                 style="${style}"
                                                 class="bb_input_filter"
-                                                value=""
+                                                value="${escapeHtml(payload.value ?? '')}"
                                                 placeholder="Filter"
                                                 onchange='DD.dispatchEvent("${windowId}", ${id}, "changed")'
                                                 onkeydown='DD.dispatchEvent("${windowId}", ${id}, "changed")'
@@ -536,6 +536,12 @@ function window(title, f)  {
 
                 }
                 const event = appendUI('filter', "", payload);
+
+                const inputEl = document.getElementById(`element-${windowId}-${getLastElementId()}`);
+                if (inputEl && inputEl.classList.contains("bb_input_filter")
+                ) {
+                        payload.value = inputEl.value;
+                }
 
                 const contentEl = document.getElementById(`element-${windowId}-${getLastElementId()}-content`);
                 if (contentEl) {
